@@ -45,8 +45,11 @@ const Login: React.FC<LoginProps> = ({ onLogin, onShowRegister }) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to your finance account</p>
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+            <h1 className="text-4xl font-bold text-blue-600 mb-1">FinSight</h1>
+            <p className="text-sm text-blue-500 font-medium">Personal Finance Management</p>
+          </div>
         </div>
         
         {error && (
