@@ -539,14 +539,7 @@ function App() {
         onClose={closeToast}
       />
       
-      {/* Logout button - positioned in top-right corner */}
-      <button
-        onClick={handleLogout}
-        disabled={loading}
-        className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow hover:bg-red-600 z-40 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Loading...' : 'Logout'}
-      </button>
+      {/* Logout button will be moved to header */}
       {/* Mobile menu backdrop */}
       {showMobileMenu && (
         <div 
@@ -636,6 +629,14 @@ function App() {
                  activeTab === 'settings' ? 'Settings' : activeTab}
               </h2>
             </div>
+            {/* Logout button in header */}
+            <button
+              onClick={handleLogout}
+              disabled={loading}
+              className="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'Logout'}
+            </button>
           </div>
         </div>
 
