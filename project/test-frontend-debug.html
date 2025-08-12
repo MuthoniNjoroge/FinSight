@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Debug Test</h1>
+    
+    <div class="test-section info">
+        <h3>Step 1: Login</h3>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result"></div>
+    </div>
+    
+    <div class="test-section info">
+        <h3>Step 2: Test API Calls</h3>
+        <button onclick="testGoals()">Test Goals API</button>
+        <button onclick="testBudgets()">Test Budgets API</button>
+        <button onclick="testExpenses()">Test Expenses API</button>
+        <button onclick="testSettings()">Test Settings API</button>
+        <div id="api-results"></div>
+    </div>
+    
+    <div class="test-section info">
+        <h3>Step 3: Test localStorage</h3>
+        <button onclick="checkLocalStorage()">Check localStorage</button>
+        <button onclick="clearLocalStorage()">Clear localStorage</button>
+        <div id="localStorage-result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        let authToken = null;
+        let userId = null;
+
+        function log(message, type = 'info') {
+            console.log(message);
+            const resultDiv = document.getElementById('api-results');
+            resultDiv.innerHTML += `<div class="test-section ${type}"><pre>${message}</pre></div>`;
+        }
+
+        async function testLogin() {
+            try {
+                log('🔐 Testing login...');
+                const response = await fetch(`${API_BASE}/users/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'john.doe@test.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                log(`Login response: ${response.status}`, response.ok ? 'success' : 'error');
+                log(JSON.stringify(data, null, 2));
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    userId = data.user.id;
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    log('✅ Login successful! Token and user saved to localStorage');
+                } else {
+                    log('❌ Login failed');
+                }
+            } catch (error) {
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testGoals() {
+            if (!authToken || !userId) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            try {
+                log('🎯 Testing goals API...');
+                const response = await fetch(`${API_BASE}/goals/user/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                log(`Goals response: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`Found ${data.length} goals`);
+                log(JSON.stringify(data, null, 2));
+            } catch (error) {
+                log(`❌ Goals API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testBudgets() {
+            if (!authToken || !userId) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            try {
+                log('💰 Testing budgets API...');
+                const response = await fetch(`${API_BASE}/budgets/user/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                log(`Budgets response: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`Found ${data.length} budgets`);
+                log(JSON.stringify(data, null, 2));
+            } catch (error) {
+                log(`❌ Budgets API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testExpenses() {
+            if (!authToken || !userId) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            try {
+                log('💸 Testing expenses API...');
+                const response = await fetch(`${API_BASE}/expenses/user/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                log(`Expenses response: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`Found ${data.length} expenses`);
+                log(JSON.stringify(data, null, 2));
+            } catch (error) {
+                log(`❌ Expenses API error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSettings() {
+            if (!authToken || !userId) {
+                log('❌ Please login first', 'error');
+                return;
+            }
+            
+            try {
+                log('⚙️ Testing settings API...');
+                const response = await fetch(`${API_BASE}/settings/user/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                log(`Settings response: ${response.status}`, response.ok ? 'success' : 'error');
+                log(JSON.stringify(data, null, 2));
+            } catch (error) {
+                log(`❌ Settings API error: ${error.message}`, 'error');
+            }
+        }
+
+        function checkLocalStorage() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const resultDiv = document.getElementById('localStorage-result');
+            
+            resultDiv.innerHTML = `
+                <div class="test-section ${token ? 'success' : 'error'}">
+                    <h4>localStorage Contents:</h4>
+                    <p><strong>Token:</strong> ${token ? '✅ Present' : '❌ Missing'}</p>
+                    <p><strong>User:</strong> ${user ? '✅ Present' : '❌ Missing'}</p>
+                    ${user ? `<pre>${user}</pre>` : ''}
+                </div>
+            `;
+        }
+
+        function clearLocalStorage() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            log('🧹 localStorage cleared');
+        }
+    </script>
+</body>
+</html> 
