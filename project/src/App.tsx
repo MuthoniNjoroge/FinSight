@@ -48,26 +48,38 @@ function App() {
 
   // Load data when user is authenticated
   useEffect(() => {
-    console.log('🔍 Auth state changed:', auth);
+    if (import.meta.env.DEV) {
+      console.log('🔍 Auth state changed:', auth);
+    }
     if (auth?.user?.id) {
-      console.log('✅ User authenticated, loading data for ID:', auth.user.id);
+      if (import.meta.env.DEV) {
+        console.log('✅ User authenticated, loading data for ID:', auth.user.id);
+      }
       loadUserData();
     } else {
-      console.log('❌ No authenticated user found');
+      if (import.meta.env.DEV) {
+        console.log('❌ No authenticated user found');
+      }
     }
   }, [auth?.user?.id]);
 
   const loadUserData = async () => {
     if (!auth?.user?.id) return;
     
-    console.log('🔄 Loading user data for user ID:', auth.user.id);
+    if (import.meta.env.DEV) {
+      console.log('🔄 Loading user data for user ID:', auth.user.id);
+    }
     setLoading(true);
     try {
       // Load goals
-      console.log('📥 Fetching goals...');
+      if (import.meta.env.DEV) {
+        console.log('📥 Fetching goals...');
+      }
       const goalsData = await goalsApi.getByUser(auth.user.id);
-      console.log('✅ Goals loaded:', goalsData);
-      setSavingsGoals(goalsData.map((goal: any) => ({
+      if (import.meta.env.DEV) {
+        console.log('✅ Goals loaded:', goalsData);
+      }
+      setSavingsGoals(goalsData.map((goal: { id: number; name: string; target_amount: string; current_amount: string; deadline: string }) => ({
         id: goal.id.toString(),
         name: goal.name,
         targetAmount: parseFloat(goal.target_amount) || 0,
@@ -77,10 +89,14 @@ function App() {
       })));
 
       // Load budgets
-      console.log('📥 Fetching budgets...');
+      if (import.meta.env.DEV) {
+        console.log('📥 Fetching budgets...');
+      }
       const budgetsData = await budgetsApi.getByUser(auth.user.id);
-      console.log('✅ Budgets loaded:', budgetsData);
-      setBudgets(budgetsData.map((budget: any) => ({
+      if (import.meta.env.DEV) {
+        console.log('✅ Budgets loaded:', budgetsData);
+      }
+      setBudgets(budgetsData.map((budget: { id: number; name: string; amount: string; period: string }) => ({
         id: budget.id.toString(),
         category: budget.name.toLowerCase(),
         allocated: parseFloat(budget.amount) || 0,
@@ -89,10 +105,14 @@ function App() {
       })));
 
       // Load expenses/transactions
-      console.log('📥 Fetching expenses...');
+      if (import.meta.env.DEV) {
+        console.log('📥 Fetching expenses...');
+      }
       const expensesData = await expensesApi.getByUser(auth.user.id);
-      console.log('✅ Expenses loaded:', expensesData);
-      setTransactions(expensesData.map((expense: any) => ({
+      if (import.meta.env.DEV) {
+        console.log('✅ Expenses loaded:', expensesData);
+      }
+      setTransactions(expensesData.map((expense: { id: number; amount: string; description: string; category: string; type: string; date: string }) => ({
         id: expense.id.toString(),
         type: (expense.type || 'expense') as 'income' | 'expense',
         amount: parseFloat(expense.amount) || 0,
@@ -102,25 +122,32 @@ function App() {
       })));
 
       // Load user settings
-      console.log('📥 Fetching settings...');
+      if (import.meta.env.DEV) {
+        console.log('📥 Fetching settings...');
+      }
       const settingsData = await settingsApi.getByUser(auth.user.id);
-      console.log('✅ Settings loaded:', settingsData);
-      console.log('✅ Settings data structure:', {
-        currency: settingsData.currency,
-        monthly_income_target: settingsData.monthly_income_target,
-        parsed_monthly_income: parseFloat(settingsData.monthly_income_target) || 5000
-      });
-      console.log('✅ Previous settings state:', settings);
+      if (import.meta.env.DEV) {
+        console.log('✅ Settings loaded:', settingsData);
+        console.log('✅ Settings data structure:', {
+          currency: settingsData.currency,
+          monthly_income_target: settingsData.monthly_income_target,
+          parsed_monthly_income: parseFloat(settingsData.monthly_income_target) || 5000
+        });
+        console.log('✅ Previous settings state:', settings);
+      }
       const newSettings = {
         ...settings,
         currency: settingsData.currency || 'USD',
         monthlyIncome: parseFloat(settingsData.monthly_income_target) || 0
       };
-      console.log('✅ New settings to set:', newSettings);
+      if (import.meta.env.DEV) {
+        console.log('✅ New settings to set:', newSettings);
+      }
       setSettings(newSettings);
-      console.log('✅ Settings state updated');
-      
-      console.log('🎉 All user data loaded successfully!');
+      if (import.meta.env.DEV) {
+        console.log('✅ Settings state updated');
+        console.log('🎉 All user data loaded successfully!');
+      }
     } catch (error) {
       console.error('❌ Failed to load user data:', error);
     } finally {

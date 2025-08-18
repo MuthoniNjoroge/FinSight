@@ -20,7 +20,27 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onAddTransaction, onC
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.amount || !formData.category || !formData.description) return;
+    
+    // Validation
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      alert('Please enter a valid amount greater than 0');
+      return;
+    }
+    
+    if (!formData.category) {
+      alert('Please select a category');
+      return;
+    }
+    
+    if (!formData.description.trim()) {
+      alert('Please enter a description');
+      return;
+    }
+    
+    if (!formData.date) {
+      alert('Please select a date');
+      return;
+    }
 
     // Use custom category if "Other" is selected
     const finalCategory = formData.category === 'Other' && formData.customCategory.trim() 
