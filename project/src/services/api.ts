@@ -1,4 +1,7 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+// Environment-based API configuration
+const API_BASE_URL = import.meta.env.PROD 
+  ? import.meta.env.VITE_API_URL || 'https://your-backend-domain.com/api'
+  : 'http://localhost:5000/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
@@ -7,6 +10,39 @@ const getAuthHeaders = () => {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`
   };
+};
+
+// Users API
+export const usersApi = {
+  async login(email: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Login failed');
+    }
+    
+    return data;
+  },
+
+  async register(name: string, email: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/users/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password })
+    });
+    
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Registration failed');
+    }
+    
+    return data;
+  }
 };
 
 // Goals API
@@ -132,50 +168,32 @@ export const expensesApi = {
 // Settings API
 export const settingsApi = {
   async getByUser(userId: number) {
-    console.log('🌐 API: Fetching settings for user', userId);
-    console.log('🌐 API: Request URL:', `${API_BASE_URL}/settings/user/${userId}`);
-    console.log('🌐 API: Request headers:', getAuthHeaders());
-    
     const response = await fetch(`${API_BASE_URL}/settings/user/${userId}`, {
       headers: getAuthHeaders()
     });
     
-    console.log('🌐 API: Settings response status:', response.status);
-    console.log('🌐 API: Settings response ok:', response.ok);
-    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('🌐 API: Settings error response:', errorText);
       throw new Error(`Failed to fetch settings: ${response.status} ${errorText}`);
     }
     
     const responseData = await response.json();
-    console.log('🌐 API: Settings success response:', responseData);
     return responseData;
   },
 
   async updateByUser(userId: number, settings: { currency?: string; monthly_income_target?: number }) {
-    console.log('🌐 API: Updating settings for user', userId, 'with data:', settings);
-    console.log('🌐 API: Request URL:', `${API_BASE_URL}/settings/user/${userId}`);
-    console.log('🌐 API: Request headers:', getAuthHeaders());
-    
     const response = await fetch(`${API_BASE_URL}/settings/user/${userId}`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(settings)
     });
     
-    console.log('🌐 API: Response status:', response.status);
-    console.log('🌐 API: Response ok:', response.ok);
-    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('🌐 API: Error response:', errorText);
       throw new Error(`Failed to update settings: ${response.status} ${errorText}`);
     }
     
     const responseData = await response.json();
-    console.log('🌐 API: Success response:', responseData);
     return responseData;
   }
-}; 
+};

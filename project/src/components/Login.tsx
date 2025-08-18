@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usersApi } from '../services/api';
 
 interface LoginProps {
   onLogin: (token: string, user: { id: number; name: string; email: string }) => void;
@@ -13,29 +14,37 @@ const Login: React.FC<LoginProps> = ({ onLogin, onShowRegister }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    
+    if (!password) {
+      setError('Please enter your password');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
     try {
-      const res = await fetch('http://localhost:3001/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
+      const data = await usersApi.login(email, password);
       
       // Store token in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       
       onLogin(data.token, data.user);
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please try again.');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

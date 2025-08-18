@@ -1,5 +1,8 @@
 require('dotenv').config();
-console.log('JWT_SECRET:', process.env.JWT_SECRET);
+// Only log JWT_SECRET in development
+if (process.env.NODE_ENV !== 'production') {
+  console.log('JWT_SECRET:', process.env.JWT_SECRET);
+}
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -12,15 +15,25 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-app.use(cors());
+
+// CORS configuration for production
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+    : true,
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Use Neon database connection from environment variables
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
+  ssl: process.env.NODE_ENV === 'production' ? {
     rejectUnauthorized: false
-  }
+  } : false
 });
 
 // Example query
@@ -51,7 +64,11 @@ app.use('/api/settings', settingsRouter(pool));
 
 // Health check route
 app.get('/', (req, res) => {
-  res.send('API is running');
+  res.json({ 
+    status: 'API is running',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Global error handler
@@ -66,4 +83,6 @@ app.use('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
+console.log('Environment PORT:', process.env.PORT);
+console.log('Final PORT:', PORT);
+app.listen(PORT, () => console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`)); 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usersApi } from '../services/api';
 
 interface RegisterProps {
   onRegister: (token: string, user: { id: number; name: string; email: string }) => void;
@@ -15,56 +16,51 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onShowLogin }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
     
-    // Password validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
+    // Validation
+    if (!name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+    
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    
+    if (!password) {
+      setError('Please enter a password');
       return;
     }
     
     if (password.length < 6) {
       setError('Password must be at least 6 characters long');
-      setLoading(false);
       return;
     }
     
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+    
+    setLoading(true);
+    setError('');
+    
     try {
-      // Register the user
-      const registerRes = await fetch('http://localhost:3001/api/users/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
+      // Register user
+      await usersApi.register(name, email, password);
       
-      const registerData = await registerRes.json();
-      
-      if (!registerRes.ok) {
-        throw new Error(registerData.error || 'Registration failed');
-      }
-      
-      // Automatically log in the user after successful registration
-      const loginRes = await fetch('http://localhost:3001/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const loginData = await loginRes.json();
-      
-      if (!loginRes.ok) {
-        throw new Error(loginData.error || 'Login after registration failed');
-      }
+      // Auto-login after successful registration
+      const loginData = await usersApi.login(email, password);
       
       // Store token in localStorage
       localStorage.setItem('token', loginData.token);
       localStorage.setItem('user', JSON.stringify(loginData.user));
       
       onRegister(loginData.token, loginData.user);
-    } catch (err: any) {
-      setError(err.message || 'Registration failed. Please try again.');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
