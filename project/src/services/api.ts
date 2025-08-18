@@ -1,6 +1,6 @@
 // Environment-based API configuration
 const API_BASE_URL = import.meta.env.PROD 
-  ? import.meta.env.VITE_API_URL || 'https://your-backend-domain.com/api'
+  ? import.meta.env.VITE_API_URL || 'https://finsight-mqsc.onrender.com/api'
   : 'http://localhost:5000/api';
 
 // Helper function to get auth headers
